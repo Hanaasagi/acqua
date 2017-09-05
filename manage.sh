@@ -30,7 +30,7 @@ start() {
     ${ARIA2_IMAGE_NAME}
 
   docker run -d --name aria2-web                               \
-    -p 0.0.0.0:${port[0]:-10023}:8888                          \ 
+    -p 0.0.0.0:${port[0]:-10023}:8888                          \
     -p 0.0.0.0:${port[1]:-10024}:80                            \
     --volumes-from aria2-data                                  \
     ${WEB_IMAGE_NAME}
