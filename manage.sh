@@ -11,7 +11,7 @@ build() {
   (cd ./web && docker build -t ${WEB_IMAGE_NAME}     .)
 }
 
-create_data_volume(){
+create_data_volume() {
   docker inspect aria2-data &> /dev/null
 
   if [[ "$?" == "1" ]]; then
@@ -21,11 +21,18 @@ create_data_volume(){
   fi
 }
 
+gen_cert() {
+  openssl req -x509 -newkey rsa:4096                           \
+    -keyout ./aria2/private-key.pem                            \
+    -out ./aria2/cert.pem -days 365 -nodes -subj "/"
+}
+
 start() {
   create_data_volume
 
   docker run -d --name aria2                                   \
     -p 0.0.0.0:6800:6800                                       \
+    -v $PWD/aria2/:/root/aria2/                                \
     --volumes-from aria2-data                                  \
     ${ARIA2_IMAGE_NAME}
 
@@ -51,24 +58,25 @@ shift
 
 while [ $# -gt 0 ]
 do
-    case $1 in
-        --port | -p )
-            port=($(tr "," " " <<< $2))
-            shift    ;;
-        -*)
-            echo "Unknown option: $1" ;;
-        *)
-            break    ;;
-    esac
-    shift
+  case $1 in
+    --port | -p )
+      port=($(tr "," " " <<< $2))
+      shift    ;;
+    -*)
+      echo "Unknown option: $1" ;;
+    *)
+      break    ;;
+  esac
+  shift
 done
 
 case "$Action" in
   build   ) build    ;;
+  gen-cert) gen_cert ;;
   start   ) start    ;;
   stop    ) stop     ;;
   *)
-    echo "Usage: build | start [-p port1,port2] | stop";;
+    echo "Usage: build | gen-cert | start [-p port1,port2] | stop";;
 esac
 
 exit 0
