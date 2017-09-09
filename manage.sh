@@ -51,6 +51,15 @@ stop() {
   docker rm -v aria2-web 2>/dev/null
 }
 
+clean() {
+  volume=$(docker inspect                                      \
+             -f '{{with index .Mounts 0}}{{.Name}}{{end}}'     \
+             aria2-data)
+
+  docker rm aria2-data 2>/dev/null
+  docker volume rm ${volume}
+}
+
 
 Action=$1
 
@@ -75,8 +84,9 @@ case "$Action" in
   gen-cert) gen_cert ;;
   start   ) start    ;;
   stop    ) stop     ;;
+  clean   ) clean    ;;
   *)
-    echo "Usage: build | gen-cert | start [-p port1,port2] | stop";;
+    echo "Usage: build | gen-cert | start [-p port1,port2] | stop | clean";;
 esac
 
 exit 0
